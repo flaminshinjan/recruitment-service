@@ -1,0 +1,30 @@
+{
+  "name": "recruitment-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "test:e2e": "bash test-e2e.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@elastic/elasticsearch": "^9.3.4",
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "morgan": "^1.10.1",
+    "mysql2": "^3.19.1",
+    "nodemon": "^3.1.14",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  }
+}

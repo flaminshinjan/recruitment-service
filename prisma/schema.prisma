@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Candidate {
+  id         Int           @id @default(autoincrement())
+  name       String
+  email      String
+  phone      String?
+  createdAt  DateTime      @default(now())
+  applications Application[]
+
+  @@index([email])
+}
+
+model Job {
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String        @db.Text
+  location    String?
+  createdAt   DateTime      @default(now())
+  applications Application[]
+}
+
+model Application {
+  id          Int      @id @default(autoincrement())
+  candidateId Int
+  jobId       Int
+  createdAt   DateTime @default(now())
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateId, jobId])
+  @@index([jobId])
+}
