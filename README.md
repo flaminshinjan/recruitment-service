@@ -1,77 +1,123 @@
 # Recruitment Service
 
-A minimal recruitment backend with candidates, jobs, applications, and Elasticsearch-powered candidate search.
+> Minimal recruitment backend: candidates, jobs, applications, and Elasticsearch-powered candidate search.
+
+## Table of Contents
+
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Setup](#setup)
+- [API Flow](#api-flow)
+- [API Reference](#api-reference)
+
+---
 
 ## Tech Stack
 
-- Node.js + Express
-- MySQL + Prisma ORM
-- Elasticsearch (candidate indexing & search)
-- Zod (validation)
+| Layer       | Technology      |
+|------------|------------------|
+| Runtime    | Node.js + Express |
+| Database   | MySQL + Prisma   |
+| Search     | Elasticsearch 8  |
+| Validation | Zod              |
+
+---
 
 ## Project Structure
 
 ```
-src/
-├── config/        # Prisma, Elasticsearch
-├── controllers/   # Request handlers
-├── services/      # Business logic
-├── routes/        # API routes
-├── generated/prisma/
-├── app.js
-└── server.js
+recruitment-service/
+├── prisma/
+│   └── schema.prisma
+├── src/
+│   ├── config/           # Prisma, Elasticsearch clients
+│   ├── controllers/      # Request handlers
+│   ├── services/         # Business logic
+│   ├── routes/           # API route definitions
+│   ├── generated/prisma/ # Prisma client (auto-generated)
+│   ├── app.js            # Express app setup
+│   └── server.js         # Entry point
+├── .env.example
+└── package.json
 ```
+
+---
 
 ## Setup
 
 ### Prerequisites
 
-- Node.js 18+
-- MySQL 8
-- Elasticsearch 8.x
+- **Node.js** 18+
+- **MySQL** 8
+- **Elasticsearch** 8.x
 
-### 1. Install dependencies
+### Steps
+
+**1. Install dependencies**
 
 ```bash
 npm install
 ```
 
-### 2. Environment
+**2. Configure environment**
 
-Copy `.env.example` to `.env` and set:
+Copy `.env.example` → `.env`:
 
-```bash
+```env
 PORT=3000
 DATABASE_URL="mysql://root:YOUR_PASSWORD@localhost:3306/recruitments_db"
 ELASTICSEARCH_URL="http://localhost:9200"
 ```
 
-### 3. Database
+**3. Database**
 
 ```bash
 npm run db:generate
 npm run db:push
 ```
 
-### 4. Start server
+**4. Start server**
 
 ```bash
 npm run dev
 ```
 
-Server runs on `http://localhost:3000`.
+→ Server runs at **http://localhost:3000**
+
+---
 
 ## API Flow
 
-1. **Health** → Check server status
-2. **Candidates** → Create, list, get by id
-3. **Jobs** → Create, list, get by id
-4. **Applications** → Apply with `candidate_id` or with new candidate details
-5. **Search** → Search candidates via Elasticsearch (name, email, phone)
+```
+Health → Candidates (CRUD) → Jobs (CRUD) → Applications (Apply) → Search (Elasticsearch)
+```
 
-## API Reference & Sample cURL
+| Step | Action |
+|------|--------|
+| 1 | Health check |
+| 2 | Create candidates |
+| 3 | Create jobs |
+| 4 | Apply (with `candidate_id` or new candidate details) |
+| 5 | Search candidates by name, email, or phone |
 
-Base URL: `http://localhost:3000`
+---
+
+## API Reference
+
+**Base URL:** `http://localhost:3000`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Health check |
+| POST | `/candidates` | Create candidate |
+| GET | `/candidates` | List candidates |
+| GET | `/candidates/:id` | Get candidate by id |
+| POST | `/jobs` | Create job |
+| GET | `/jobs` | List jobs |
+| GET | `/jobs/:id` | Get job by id |
+| POST | `/applications` | Apply to job |
+| GET | `/applications` | List applications |
+| GET | `/search/candidates?q=` | Search candidates |
 
 ---
 
@@ -81,7 +127,6 @@ Base URL: `http://localhost:3000`
 curl -s http://localhost:3000/health
 ```
 
-**Response:**
 ```json
 {"status":"ok"}
 ```
@@ -96,19 +141,18 @@ curl -s -X POST http://localhost:3000/candidates \
   -d '{"name":"Alice Johnson","email":"alice@example.com","phone":"555-1111"}'
 ```
 
-**Response:**
 ```json
 {"id":10,"name":"Alice Johnson","email":"alice@example.com","phone":"555-1111","createdAt":"2026-03-12T13:40:06.845Z"}
 ```
 
-**Without phone (optional):**
+*Without phone (optional):*
+
 ```bash
 curl -s -X POST http://localhost:3000/candidates \
   -H "Content-Type: application/json" \
   -d '{"name":"Bob Smith","email":"bob@example.com"}'
 ```
 
-**Response:**
 ```json
 {"id":11,"name":"Bob Smith","email":"bob@example.com","phone":null,"createdAt":"2026-03-12T13:40:13.663Z"}
 ```
@@ -121,7 +165,6 @@ curl -s -X POST http://localhost:3000/candidates \
 curl -s http://localhost:3000/candidates
 ```
 
-**Response:**
 ```json
 [
   {"id":11,"name":"Bob Smith","email":"bob@example.com","phone":null,"createdAt":"2026-03-12T13:40:13.663Z"},
@@ -137,21 +180,20 @@ curl -s http://localhost:3000/candidates
 curl -s http://localhost:3000/candidates/1
 ```
 
-**Response:**
 ```json
 {
-  "id":1,
-  "name":"Alice",
-  "email":"alice@test.com",
-  "phone":"123",
-  "createdAt":"2026-03-12T12:52:59.280Z",
-  "applications":[
+  "id": 1,
+  "name": "Alice",
+  "email": "alice@test.com",
+  "phone": "123",
+  "createdAt": "2026-03-12T12:52:59.280Z",
+  "applications": [
     {
-      "id":1,
-      "candidateId":1,
-      "jobId":1,
-      "createdAt":"2026-03-12T12:53:07.443Z",
-      "job":{"id":1,"title":"Dev","description":"Dev job","location":"Remote","createdAt":"2026-03-12T12:53:07.425Z"}
+      "id": 1,
+      "candidateId": 1,
+      "jobId": 1,
+      "createdAt": "2026-03-12T12:53:07.443Z",
+      "job": {"id": 1, "title": "Dev", "description": "Dev job", "location": "Remote"}
     }
   ]
 }
@@ -167,7 +209,6 @@ curl -s -X POST http://localhost:3000/jobs \
   -d '{"title":"Software Engineer","description":"Full stack developer role","location":"Remote"}'
 ```
 
-**Response:**
 ```json
 {"id":5,"title":"Software Engineer","description":"Full stack developer role","location":"Remote","createdAt":"2026-03-12T13:40:32.546Z"}
 ```
@@ -178,7 +219,6 @@ curl -s -X POST http://localhost:3000/jobs \
   -d '{"title":"Product Manager","description":"Product ownership","location":"NYC"}'
 ```
 
-**Response:**
 ```json
 {"id":6,"title":"Product Manager","description":"Product ownership","location":"NYC","createdAt":"2026-03-12T13:40:40.372Z"}
 ```
@@ -191,7 +231,6 @@ curl -s -X POST http://localhost:3000/jobs \
 curl -s http://localhost:3000/jobs
 ```
 
-**Response:**
 ```json
 [
   {"id":6,"title":"Product Manager","description":"Product ownership","location":"NYC","createdAt":"2026-03-12T13:40:40.372Z"},
@@ -207,28 +246,25 @@ curl -s http://localhost:3000/jobs
 curl -s http://localhost:3000/jobs/1
 ```
 
-**Response:**
 ```json
 {
-  "id":1,
-  "title":"Dev",
-  "description":"Dev job",
-  "location":"Remote",
-  "createdAt":"2026-03-12T12:53:07.425Z",
-  "applications":[
+  "id": 1,
+  "title": "Dev",
+  "description": "Dev job",
+  "location": "Remote",
+  "createdAt": "2026-03-12T12:53:07.425Z",
+  "applications": [
     {
-      "id":1,
-      "candidateId":1,
-      "jobId":1,
-      "createdAt":"2026-03-12T12:53:07.443Z",
-      "candidate":{"id":1,"name":"Alice","email":"alice@test.com","phone":"123","createdAt":"2026-03-12T12:52:59.280Z"}
+      "id": 1,
+      "candidateId": 1,
+      "jobId": 1,
+      "candidate": {"id": 1, "name": "Alice", "email": "alice@test.com"}
     },
     {
-      "id":2,
-      "candidateId":2,
-      "jobId":1,
-      "createdAt":"2026-03-12T12:53:15.221Z",
-      "candidate":{"id":2,"name":"Bob","email":"bob@test.com","phone":null,"createdAt":"2026-03-12T12:53:07.458Z"}
+      "id": 2,
+      "candidateId": 2,
+      "jobId": 1,
+      "candidate": {"id": 2, "name": "Bob", "email": "bob@test.com"}
     }
   ]
 }
@@ -244,21 +280,21 @@ curl -s -X POST http://localhost:3000/applications \
   -d '{"candidate_id":1,"job_id":1}'
 ```
 
-**Response (already applied):**
-```json
-{"error":"Already applied to this job"}
-```
-
-**Response (success):**
+*Success:*
 ```json
 {
-  "id":1,
-  "candidateId":1,
-  "jobId":1,
-  "createdAt":"2026-03-12T12:53:07.443Z",
-  "candidate":{"id":1,"name":"Alice","email":"alice@test.com","phone":"123","createdAt":"2026-03-12T12:52:59.280Z"},
-  "job":{"id":1,"title":"Dev","description":"Dev job","location":"Remote","createdAt":"2026-03-12T12:53:07.425Z"}
+  "id": 1,
+  "candidateId": 1,
+  "jobId": 1,
+  "createdAt": "2026-03-12T12:53:07.443Z",
+  "candidate": {"id": 1, "name": "Alice", "email": "alice@test.com"},
+  "job": {"id": 1, "title": "Dev", "description": "Dev job"}
 }
+```
+
+*Already applied:*
+```json
+{"error": "Already applied to this job"}
 ```
 
 ---
@@ -271,21 +307,20 @@ curl -s -X POST http://localhost:3000/applications \
   -d '{"job_id":1,"candidate":{"name":"Carol Williams","email":"carol@example.com","phone":"555-3333"}}'
 ```
 
-**Response:**
 ```json
 {
-  "id":10,
-  "candidateId":12,
-  "jobId":1,
-  "createdAt":"2026-03-12T13:41:01.768Z",
-  "candidate":{
-    "id":12,
-    "name":"Carol Williams",
-    "email":"carol@example.com",
-    "phone":"555-3333",
-    "createdAt":"2026-03-12T13:41:01.734Z"
+  "id": 10,
+  "candidateId": 12,
+  "jobId": 1,
+  "createdAt": "2026-03-12T13:41:01.768Z",
+  "candidate": {
+    "id": 12,
+    "name": "Carol Williams",
+    "email": "carol@example.com",
+    "phone": "555-3333",
+    "createdAt": "2026-03-12T13:41:01.734Z"
   },
-  "job":{"id":1,"title":"Dev","description":"Dev job","location":"Remote","createdAt":"2026-03-12T12:53:07.425Z"}
+  "job": {"id": 1, "title": "Dev", "description": "Dev job", "location": "Remote"}
 }
 ```
 
@@ -297,16 +332,14 @@ curl -s -X POST http://localhost:3000/applications \
 curl -s http://localhost:3000/applications
 ```
 
-**Response:**
 ```json
 [
   {
-    "id":10,
-    "candidateId":12,
-    "jobId":1,
-    "createdAt":"2026-03-12T13:41:01.768Z",
-    "candidate":{"id":12,"name":"Carol Williams","email":"carol@example.com","phone":"555-3333","createdAt":"2026-03-12T13:41:01.734Z"},
-    "job":{"id":1,"title":"Dev","description":"Dev job","location":"Remote","createdAt":"2026-03-12T12:53:07.425Z"}
+    "id": 10,
+    "candidateId": 12,
+    "jobId": 1,
+    "candidate": {"id": 12, "name": "Carol Williams", "email": "carol@example.com"},
+    "job": {"id": 1, "title": "Dev", "description": "Dev job"}
   }
 ]
 ```
@@ -315,17 +348,16 @@ curl -s http://localhost:3000/applications
 
 ### 11. Search Candidates (Elasticsearch)
 
-Searches across name, email, and phone.
+Searches across **name**, **email**, and **phone**.
 
 ```bash
 curl -s "http://localhost:3000/search/candidates?q=alice"
 ```
 
-**Response:**
 ```json
 [
-  {"id":9,"name":"Alice","email":"alice@example.com","phone":"+1234567890","createdAt":"2026-03-12T13:38:27.512Z"},
-  {"id":10,"name":"Alice Johnson","email":"alice@example.com","phone":"555-1111","createdAt":"2026-03-12T13:40:06.845Z"}
+  {"id": 9, "name": "Alice", "email": "alice@example.com"},
+  {"id": 10, "name": "Alice Johnson", "email": "alice@example.com"}
 ]
 ```
 
@@ -333,25 +365,22 @@ curl -s "http://localhost:3000/search/candidates?q=alice"
 curl -s "http://localhost:3000/search/candidates?q=example.com"
 ```
 
-**Response:**
 ```json
 [
-  {"id":8,"name":"Test Search","email":"search@example.com","phone":null,"createdAt":"2026-03-12T13:38:18.287Z"},
-  {"id":9,"name":"Alice","email":"alice@example.com","phone":"+1234567890","createdAt":"2026-03-12T13:38:27.512Z"},
-  {"id":10,"name":"Alice Johnson","email":"alice@example.com","phone":"555-1111","createdAt":"2026-03-12T13:40:06.845Z"},
-  {"id":11,"name":"Bob Smith","email":"bob@example.com","phone":null,"createdAt":"2026-03-12T13:40:13.663Z"},
-  {"id":12,"name":"Carol Williams","email":"carol@example.com","phone":"555-3333","createdAt":"2026-03-12T13:41:01.734Z"}
+  {"id": 8, "name": "Test Search", "email": "search@example.com"},
+  {"id": 9, "name": "Alice", "email": "alice@example.com"},
+  {"id": 10, "name": "Alice Johnson", "email": "alice@example.com"},
+  {"id": 11, "name": "Bob Smith", "email": "bob@example.com"},
+  {"id": 12, "name": "Carol Williams", "email": "carol@example.com"}
 ]
 ```
 
-**No matches:**
+*No matches:*
 ```bash
 curl -s "http://localhost:3000/search/candidates?q=software"
 ```
-**Response:**
 ```json
 []
 ```
 
-> Note: Search indexes candidates only. Job titles/descriptions are not searchable.
-
+> Search indexes candidates only. Job titles and descriptions are not searchable.
