@@ -3,7 +3,6 @@ const cors = require("cors");
 const morgan = require("morgan");
 require("dotenv").config();
 
-const { ensureIndex } = require("./config/elasticsearch");
 const candidateRoutes = require("./routes/candidate.routes");
 const jobRoutes = require("./routes/job.routes");
 const applicationRoutes = require("./routes/application.routes");
@@ -21,7 +20,5 @@ app.use("/applications", applicationRoutes);
 app.use("/search", searchRoutes);
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
-
-ensureIndex().catch(() => {});
 
 module.exports = app;

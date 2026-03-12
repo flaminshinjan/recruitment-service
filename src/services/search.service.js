@@ -5,18 +5,21 @@ async function searchCandidates(query) {
   const q = typeof query === "string" ? query : query?.q || "";
   const result = await esClient.search({
     index: CANDIDATES_INDEX,
-    query: {
-      bool: {
-        should: [
-          { match: { name: q } },
-          { match_phrase_prefix: { email: q } },
-          { match_phrase_prefix: { phone: q } },
-        ],
-        minimum_should_match: 1,
+    body: {
+      query: {
+        bool: {
+          should: [
+            { match: { name: q } },
+            { match_phrase_prefix: { email: q } },
+            { match_phrase_prefix: { phone: q } },
+          ],
+          minimum_should_match: 1,
+        },
       },
     },
   });
-  const ids = result.hits.hits.map((h) => parseInt(h._id));
+  const hits = result.body?.hits?.hits ?? result.hits?.hits ?? [];
+  const ids = hits.map((h) => parseInt(h._id));
   if (ids.length === 0) return [];
   const candidates = await prisma.candidate.findMany({
     where: { id: { in: ids } },
