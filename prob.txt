@@ -1,7 +1,0 @@
-Build a minimal recruitment backend service where:
-Candidates can be created
-Jobs can be created
-Candidates can apply to jobs(use candidate_id if existing else candidate details)
-Candidates are indexed into Elasticsearch
-Candidates can be searched via Elasticsearch
-	•		6.	Use MYSQL + any ORM of choice. NodeJs +  express
